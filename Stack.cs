@@ -32,7 +32,7 @@ namespace Cards
         }
         public void Show()
         {
-            ICard card = (ICard)_Cards[0]!;
+            ICard card = _Cards[0];
             card.Face();
         }
 
