@@ -4,12 +4,12 @@ namespace Cards.Interfaces
 {
     interface IStack
     {
-        ArrayList Cards { get; }
+        List<ICard> Cards { get; }
 
         bool Add(ICard card);
 
         void Show();
 
-        ICard[] Empty();
+        List<ICard> RetrieveAllCards();
     }
 }
