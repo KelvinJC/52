@@ -1,0 +1,14 @@
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.AssemblyInfoInputs.cache
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.AssemblyInfo.cs
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.csproj.CoreCompileInputs.cache
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\bin\Debug\net8.0\Cards.exe
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\bin\Debug\net8.0\Cards.deps.json
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\bin\Debug\net8.0\Cards.runtimeconfig.json
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\bin\Debug\net8.0\Cards.dll
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\bin\Debug\net8.0\Cards.pdb
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.dll
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\refint\Cards.dll
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.pdb
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\Cards.genruntimeconfig.cache
+C:\Users\kelvin.johnson-chu\source\repos\StartC#\Cards\obj\Debug\net8.0\ref\Cards.dll
