@@ -39,12 +39,6 @@ namespace Cards
 
         Random rnd = new ();
 
-        public void AddPlayerStats(int gamesPlayed, int gamesWon)
-        {
-            Stats.GamesPlayed += gamesPlayed;
-            Stats.GamesWon += gamesWon;
-        }
-
         public void AcceptCard(ICard card)
         {
             Hand.Add(card);
@@ -61,6 +55,13 @@ namespace Cards
             Hand.Clear();
             Hand.AddRange(newCards);
         }
+        public void AddPlayerStats(int gamesPlayed, int gamesWon)
+        {
+            Stats.GamesPlayed += gamesPlayed;
+            Stats.GamesWon += gamesWon;
+        }
+
+        public int GetHandCount() { return Hand.Count; }
 
         public ICard? PlayCard(ICard card)
         {

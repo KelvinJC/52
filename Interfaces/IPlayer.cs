@@ -7,7 +7,10 @@ namespace Cards.Interfaces
         string Name { get; }
 
         void AcceptCard(ICard card);
+
         void AcceptCards(List<ICard> cards, CardPosition place = CardPosition.first);
+
+        int GetHandCount();
 
         void DropHand();
 
