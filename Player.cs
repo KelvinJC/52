@@ -45,13 +45,13 @@ namespace Cards
             Stats.GamesWon += gamesWon;
         }
 
-        public void GetCard(ICard card)
+        public void AcceptCard(ICard card)
         {
             Hand.Add(card);
             Console.WriteLine($"Card added to {Name}'s hand");
         }
 
-        public void GetCards(ICard[] cards, CardPosition place = CardPosition.first)
+        public void AcceptCards(List<ICard> cards, CardPosition place = CardPosition.first)
         {
             // add multiple cards
             // place arg determines whether the cards are put `above` or `beneath` the current cards
