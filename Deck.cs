@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Cards.Interfaces;
 
 
@@ -12,11 +13,11 @@ namespace Cards
 
         private const string RED = "Red";
         private const string BLACK = "Black";
-        private ArrayList _Cards;
+        private List<ICard> _Cards;
 
-        public ICard[] Cards
+        public List<ICard> Cards
         {
-            get => (ICard[])_Cards.ToArray(typeof(ICard));
+            get => _Cards;
         }
 
         Random rnd = new();
@@ -26,9 +27,9 @@ namespace Cards
             _Cards = Generate();
         }
 
-        private ArrayList Generate()
+        private List<ICard> Generate()
         {
-            ArrayList deck = new();
+            List<ICard> deck = new();
             string colour;
 
             foreach (string suit in Suits)
@@ -58,9 +59,9 @@ namespace Cards
             }
         }
 
-        public void Face(ICard[] cards)
+        public void Face(List<ICard> cards)
         {
-            if (cards == null || cards[0] == null)
+            if (cards.Count == 0)
                 throw new ArgumentException("Deck is empty");
             try
             {
@@ -80,7 +81,7 @@ namespace Cards
             if (_Cards.Count == 0)
                 throw new Exception("Deck is empty.");
 
-            ICard[] deckToShuffle = (ICard[])_Cards.ToArray(typeof(ICard));
+            ICard[] deckToShuffle = [.._Cards];
             for (int i = 0; i <= shuffleCount; i++)
             {
                 rnd.Shuffle(deckToShuffle);
@@ -89,15 +90,25 @@ namespace Cards
             _Cards.AddRange(deckToShuffle);
         }
 
-        public ICard[] Shuffle(ICard[] cards, int shuffleCount = 10)
+        public List<ICard> Shuffle(List<ICard> cards, int shuffleCount = 10)
         {
-            ICard[] deckToShuffle = new ICard[cards.Length];
-            Array.Copy(cards, deckToShuffle, cards.Length);
+            ICard[] shuffleDuplicate = [..cards];
             for (int i = 0; i <= shuffleCount; i++)
             {
-                rnd.Shuffle(deckToShuffle);
+                rnd.Shuffle(shuffleDuplicate);
             }
-            return deckToShuffle;
+
+            List<ICard> shuffledCards = [.. shuffleDuplicate];
+            return shuffledCards;
+        }
+
+        public ICard[] Shuffle(ICard[] cards, int shuffleCount = 10)
+        {
+            for (int i = 0; i <= shuffleCount; i++)
+            {
+                rnd.Shuffle(cards);
+            }
+            return cards;
         }
 
         public ICard Deal()
@@ -106,7 +117,7 @@ namespace Cards
                 throw new Exception("Deck is empty.");
 
             int pick = rnd.Next(_Cards.Count);
-            ICard card = (ICard)_Cards[pick]!;
+            ICard card = _Cards[pick];
             _Cards.Remove(card);
             return card;
         }
@@ -116,7 +127,7 @@ namespace Cards
             if (_Cards.Count == 0)
                 throw new Exception("Deck is empty.");
 
-            ICard card = (ICard)_Cards[0]!;
+            ICard card = _Cards[0];
             _Cards.Remove(card);
             return card;
         }
@@ -126,7 +137,7 @@ namespace Cards
             if (_Cards.Count == 0)
                 throw new Exception("Deck is empty.");
 
-            ICard card = (ICard)_Cards[^1]!;
+            ICard card = _Cards[^1];
             _Cards.Remove(card);
             return card;
         }
@@ -138,7 +149,7 @@ namespace Cards
             if (!Suits.Contains(suit))
                 throw new ArgumentException("Suit must be one of 'Clubs', 'Diamonds', 'Hearts' or 'Spades'");
 
-            ArrayList suitCards = new();
+            List<ICard> suitCards = new();
             foreach (ICard card in _Cards)
             {
                 if (card.Suit == suit)
@@ -147,7 +158,7 @@ namespace Cards
                 }
             }
             int pick = rnd.Next(suitCards.Count);
-            ICard pickedCard = (ICard)suitCards[pick]!;
+            ICard pickedCard = suitCards[pick];
             _Cards.Remove(pickedCard);
             return pickedCard;
         }
@@ -160,7 +171,7 @@ namespace Cards
                 throw new ArgumentException("Rank must be one of " +
                     "'Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen' or 'King'");
 
-            ArrayList rankCards = new();
+            List<ICard> rankCards = new();
             foreach (ICard card in _Cards)
             {
                 if (card.Rank == rank)
@@ -169,30 +180,28 @@ namespace Cards
                 }
             }
             int pick = rnd.Next(rankCards.Count);
-            ICard pickedCard = (ICard)rankCards[pick]!;
+            ICard pickedCard = rankCards[pick];
             _Cards.Remove(pickedCard);
             return pickedCard;
         }
 
-        public (ICard[], ICard[], ICard[]?) Split()
+        public (List<ICard>, List<ICard>, List<ICard>?) Split()
         {
             // split `_Cards` deck in two
-            // return three arrays with the halves in the first two and any remnant card in the third
-            // if the deck is evenly numbered, the third array is empty 
+            // return three lists with the halves in the first two and any remnant card in the third
+            // if the deck is evenly numbered, the third list is empty 
             // at the end of this operation, the `_Cards` deck is left empty
 
-            ArrayList firstHalf = new();
-            ArrayList secondHalf = new();
-            ICard[] remainder;
+            List<ICard> firstHalf = [];
+            List<ICard> secondHalf = [];
+            List<ICard> remainder = [];
 
             if (_Cards.Count == 0)
                 throw new Exception("Deck is empty.");
 
-            if ((_Cards.Count % 2) == 0)
-                remainder = [];
-            else
+            if ((_Cards.Count % 2) != 0)
             {
-                ICard remCard = (ICard)_Cards[^1]!;
+                ICard remCard = _Cards[^1];
                 _Cards.Remove(remCard);
                 remainder = [remCard];
             }
@@ -206,12 +215,12 @@ namespace Cards
             }
             _Cards.Clear();
 
-            ICard[] firstDeck = (ICard[])firstHalf.ToArray(typeof(ICard));
-            ICard[] secondDeck = (ICard[])secondHalf.ToArray(typeof(ICard));
+            List<ICard> firstDeck = firstHalf;
+            List<ICard> secondDeck = secondHalf;
             return (firstDeck, secondDeck, remainder);
         }
 
-        public Dictionary<string, ICard[]> DealFillFirst(int numPlayers, int cardsPerPlayer, bool dealFromCardZero = true)
+        public Dictionary<string, List<ICard>> DealFillFirst(int numPlayers, int cardsPerPlayer, bool dealFromCardZero = true)
         {
             // deal cards by filling player's hand before moving to the next
 
@@ -220,24 +229,23 @@ namespace Cards
             if (_Cards.Count < (cardsPerPlayer * numPlayers))
                 throw new ArgumentException("Invalid argument. Cards in deck not sufficient to go round.");
 
-            Dictionary<string, ICard[]> dealer = new();
+            Dictionary<string, List<ICard>> dealer = new();
 
             for (int handsDealt = 0; handsDealt < numPlayers; handsDealt++)
             {
-                ArrayList hand = new();
+                List<ICard> hand = new();
                 for (int cardsDealt = 0; cardsDealt < cardsPerPlayer; cardsDealt++)
                 {
                     ICard card = dealFromCardZero ? DealFirst() : DealLast();
                     hand.Add(card);
                 }
-                ICard[] playerHand = (ICard[])hand.ToArray(typeof(ICard));
                 string playerHandId = "player" + (handsDealt + 1).ToString();
-                dealer.Add(playerHandId, playerHand);
+                dealer.Add(playerHandId, hand);
             }
             return dealer;
         }
 
-        public Dictionary<string, ICard[]> DealFillFirstRandom(int numPlayers, int cardsPerPlayer)
+        public Dictionary<string, List<ICard>> DealFillFirstRandom(int numPlayers, int cardsPerPlayer)
         {
             // deal cards in random manner, fill a player's hand before moving to the next
             if (_Cards.Count == 0)
@@ -247,20 +255,19 @@ namespace Cards
             if (_Cards.Count < (cardsPerPlayer * numPlayers))
                 throw new ArgumentException("Invalid argument. Cards in deck not sufficient to go round.");
 
-            Dictionary<string, ICard[]> dealer = new Dictionary<string, ICard[]>();
+            Dictionary<string, List<ICard>> dealer = new();
 
             for (int handsDealt = 0; handsDealt < numPlayers; handsDealt++)
             {
-                ArrayList hand = new();
+                List<ICard> hand = [];
                 for (int cardsDealt = 0; cardsDealt < cardsPerPlayer; cardsDealt++)
                 {
                     ICard card = Deal();
                     hand.Add(card);
                 }
 
-                ICard[] playersHand = (ICard[])hand.ToArray(typeof(ICard));
                 string playersHandId = "player" + (handsDealt + 1).ToString(); // player0, player1, player2 etc...
-                dealer.Add(playersHandId, playersHand);
+                dealer.Add(playersHandId, hand);
             }
             return dealer;
         }
@@ -278,7 +285,7 @@ namespace Cards
             card = null;
         }
 
-        public void ReturnCards(ref ICard[] cards)
+        public void ReturnCards(ref List<ICard> cards)
         {
             foreach (ICard card in cards)
             {
