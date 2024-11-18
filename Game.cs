@@ -12,7 +12,7 @@ namespace Cards
             // begin game
             deck.Shuffle(shuffleCount: 10);
 
-            ICard startCard = deck.PickFirst();
+            ICard startCard = deck.DealFirst();
             bool startCardAdded = stack.Add(startCard);
 
             if (!startCardAdded)
@@ -44,14 +44,6 @@ namespace Cards
 
         }
 
-        //private static void PushStackToDeck(IStack stack, IDeck deck)
-        //{
-        //    ICard[] cards = deck.Cards;
-        //    ICard[] cc = stack.Cards();
-        //    stack.ReturnToDeck(ref cards, deck: deck);
-
-        //}
-
         private static void EndGame(IPlayer winner)
         {
             Console.WriteLine("Game Over");
@@ -63,7 +55,7 @@ namespace Cards
         {
             try
             {
-                ICard[] cards = stack.Empty();
+                List<ICard> cards = stack.RetrieveAllCards();
                 deck.ReturnCards(ref cards);
                 return true;
             }
