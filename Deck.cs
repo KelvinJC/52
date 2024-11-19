@@ -167,14 +167,19 @@ namespace Cards
                 throw new ArgumentException("Rank must be one of " +
                     "'Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen' or 'King'");
 
-            List<ICard> rankCards = new();
-            foreach (ICard card in _Cards)
-            {
-                if (card.Rank == rank)
-                {
-                    rankCards.Add(card);
-                }
-            }
+            //List<ICard> rankCards = new();
+            //foreach (ICard card in _Cards)
+            //{
+            //    if (card.Rank == rank)
+            //    {
+            //        rankCards.Add(card);
+            //    }
+            //}
+            List<ICard> rankCards = _Cards
+                .Where(card => card.Rank == rank)
+                .ToList();
+
+
             int pick = rnd.Next(rankCards.Count);
             ICard pickedCard = rankCards[pick];
             _Cards.Remove(pickedCard);
