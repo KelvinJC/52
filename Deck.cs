@@ -149,7 +149,9 @@ namespace Cards
             if (!Suits.Contains(suit))
                 throw new ArgumentException("Suit must be one of 'Clubs', 'Diamonds', 'Hearts' or 'Spades'");
 
-            List<ICard> suitCards = _Cards.Where(card => card.Suit == suit).ToList();
+            List<ICard> suitCards = _Cards
+                .Where(card => card.Suit == suit)
+                .ToList();
 
             int pick = rnd.Next(suitCards.Count);
             ICard pickedCard = suitCards[pick];
