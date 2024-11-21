@@ -41,7 +41,7 @@ namespace Cards
             if (cardsDealt)
             {
                 winner = GameRound(players: orderedPlayers);
-                if (winner.Name == "No Name")
+                if (winner.Equals(defaultPlayer))
                     Console.WriteLine("Game Round Ends Without Winner");
                 else
                 {
