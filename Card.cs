@@ -20,7 +20,7 @@ namespace Cards
 
         public void Face()
         {
-            Console.WriteLine($"Card - Suit: {FancySuit}, Rank: {Rank}, Colour: {Colour}");
+            Console.WriteLine($"Card -> Suit: {FancySuit}, Rank: {Rank}, Colour: {Colour}");
         }
 
         private string GetFancySuit(string suit)

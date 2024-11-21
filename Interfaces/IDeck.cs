@@ -7,13 +7,14 @@ namespace Cards.Interfaces
         string[]? Suits { get; }
         string[]? Ranks { get; }
 
-        ICard[] Cards { get; }
+        List<ICard> Cards { get; }
 
         void Face();
-        void Face(ICard[] cards);
+        void Face(List<ICard> cards);
 
         void Shuffle(int shuffleCount);
         ICard[] Shuffle(ICard[] cards, int shuffleCount);
+        List<ICard> Shuffle(List<ICard> cards, int shuffleCount);
 
         ICard Deal();
 
@@ -25,11 +26,11 @@ namespace Cards.Interfaces
 
         ICard DealRank(string rank);
 
-        (ICard[], ICard[], ICard[]?) Split();
+        (List<ICard>, List<ICard>, List<ICard>?) Split();
 
         void ReturnCard(ref ICard? card);
 
-        void ReturnCards(ref ICard[] cards);
+        void ReturnCards(ref List<ICard> cards);
     }
 }
 

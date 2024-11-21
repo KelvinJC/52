@@ -31,13 +31,32 @@ namespace Cards
     class Player(string name) : IPlayer
     {
         public string Name { get; set; } = name;
-        private ArrayList Hand { get; set; } = [];
+        private List<ICard> Hand { get; set; } = [];
 
         private GameStatistics Stats = new ();
 
         public CardPlayRule CardPlayRule { get; set; }
 
         Random rnd = new ();
+        const int ARBITRARY_HIGH_NUMBER = 200;
+        const int ARBITRARY_LOW_NUMBER = 0;
+
+
+        public void AcceptCard(ICard card)
+        {
+            Hand.Add(card);
+            Console.WriteLine($"Card added to {Name}'s hand");
+        }
+
+        public void AcceptCards(List<ICard> cards, CardPosition place = CardPosition.first)
+        {
+            // add multiple cards
+            // place arg determines whether the cards are put `above` or `beneath` the current cards
+
+            ICard[] newCards = (place == CardPosition.first) ? [..cards, ..Hand] : [..Hand, ..cards];
+            Hand.Clear();
+            Hand.AddRange(newCards);
+        }
 
         public void AddPlayerStats(int gamesPlayed, int gamesWon)
         {
@@ -45,22 +64,12 @@ namespace Cards
             Stats.GamesWon += gamesWon;
         }
 
-        public void GetCard(ICard card)
+        public void DropHand()
         {
-            Hand.Add(card);
-            Console.WriteLine($"Card added to {Name}'s hand");
-        }
-
-        public void GetCards(ICard[] cards, CardPosition place = CardPosition.first)
-        {
-            // add multiple cards
-            // place arg determines whether the cards are put `above` or `beneath` the current cards
-
-            ICard[] currentCards = (ICard[])Hand.ToArray (typeof (ICard));
-            ICard[] newCards = (place == CardPosition.first) ? [..cards, ..currentCards] : [..currentCards, ..cards];
             Hand.Clear();
-            Hand.AddRange(newCards);
         }
+
+        public int GetHandCount() { return Hand.Count; }
 
         public ICard? PlayCard(ICard card)
         {
@@ -79,26 +88,59 @@ namespace Cards
             }
         }
 
-        public void DropHand()
-        {
-            Hand.Clear();
-
-        }
-
-        //public ICard? PlayCard(ArrayList hand, string suit, string rank)
-        //{
-        //    ArrayList play = new();
-        //    foreach (ICard card in Hand)
-        //    {
-        //        if (card.Rank == rank) play.Add(card);
-        //        if (card.Suit == suit) play.Add(card);
-        //    }
-        //    return null;
-        //}
-
         public ICard? PlayCardByPosition(CardPosition position = CardPosition.last)
         {
-            ICard card = (position == CardPosition.last) ? (ICard)Hand[^1]! : (ICard)Hand[0]!;
+            ICard card = (position == CardPosition.last) ? Hand[^1] : Hand[0];
+            return PlayCard(card);
+        }
+
+        public ICard? PlayHigherCard(Dictionary<string, int> cardRanking, ICard cardToBeat)
+        {
+            foreach (ICard card in Hand)
+            {
+                if (cardRanking[card.Rank] > cardRanking[cardToBeat.Rank])
+                    return PlayCard(card);
+            }
+            return null;
+        }
+
+        public ICard? PlayHighestRankCard(Dictionary<string, int> cardRanking)
+        {
+            ICard highestCard = Hand[0];
+            int highest = ARBITRARY_LOW_NUMBER;
+            foreach (ICard card in Hand)
+            {
+                if (cardRanking[card.Rank] > highest)
+                {
+                    highestCard = card;
+                    highest = cardRanking[card.Rank];
+                }
+            }
+            return PlayCard(highestCard);
+        }
+
+        public ICard? PlayLowestRankCard(Dictionary<string, int> cardRanking)
+        {
+            ICard lowestCard = Hand[0];
+            int lowest = ARBITRARY_HIGH_NUMBER;
+            foreach (ICard card in Hand)
+            {
+                if (cardRanking[card.Rank] < lowest)
+                {
+                    lowestCard = card;
+                    lowest = cardRanking[card.Rank];
+                }
+            }
+            return PlayCard(lowestCard);
+        }
+
+        public ICard? PlayRandomCard()
+        {
+            if (Hand.Count == 0)
+                throw new Exception($"Player {Name}'s hand is empty.");
+
+            int pick = rnd.Next(Hand.Count);
+            ICard card = Hand[pick];
             return PlayCard(card);
         }
 
@@ -113,7 +155,6 @@ namespace Cards
             return null;
         }
 
-
         public ICard? PlaySameSuitCard(string suit)
         {
             foreach (ICard card in Hand)
@@ -122,56 +163,6 @@ namespace Cards
                     return PlayCard(card);
             }
             Console.WriteLine($"Player {Name} has no suit of {suit} suit");
-            return null;
-        }
-
-        public ICard? PlayRandomCard()
-        {
-            if (Hand.Count == 0)
-                throw new Exception($"Player {Name}'s hand is empty.");
-
-            int pick = rnd.Next(Hand.Count);
-            ICard card = (ICard)Hand[pick]!;
-            return PlayCard(card);
-        }
-
-        public ICard? PlayLowestRankCard(Dictionary<string, int> cardRanking)
-        {
-            ICard lowestCard = (ICard)Hand[0]!;
-            int lowest = 200;
-            foreach (ICard card in Hand)
-            {
-                if (cardRanking[card.Rank] < lowest)
-                {
-                    lowestCard = card;
-                    lowest = cardRanking[card.Rank];
-                }
-            }
-            return PlayCard(lowestCard);
-        }
-
-        public ICard? PlayHighestRankCard(Dictionary<string, int> cardRanking)
-        {
-            ICard highestCard = (ICard)Hand[0]!;
-            int highest = 0;
-            foreach (ICard card in Hand)
-            {
-                if (cardRanking[card.Rank] > highest)
-                {
-                    highestCard = card;
-                    highest = cardRanking[card.Rank];
-                }
-            }
-            return PlayCard(highestCard);
-        }
-
-        public ICard? PlayHigherCard(Dictionary<string, int> cardRanking, ICard cardToBeat)
-        {
-            foreach (ICard card in Hand)
-            {
-                if (cardRanking[card.Rank] > cardRanking[cardToBeat.Rank])
-                    return PlayCard(card);
-            }
             return null;
         }
     }

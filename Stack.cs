@@ -8,9 +8,9 @@ namespace Cards
     class GStack : IStack
     {
 
-        private ArrayList _Cards { get; set; } = new ArrayList();
+        private List<ICard> _Cards { get; set; } = new ();
 
-        public ArrayList Cards { get { return _Cards; } }
+        public List<ICard> Cards { get { return _Cards; } }
 
         public bool Add(ICard card)
         {
@@ -20,7 +20,7 @@ namespace Cards
                 return true;
             }
 
-            ICard current = (ICard)_Cards[0]!;
+            ICard current = _Cards[0];
             if (current.Rank == card.Rank || current.Suit == card.Suit)
             {
                 _Cards.Add(card);
@@ -32,13 +32,13 @@ namespace Cards
         }
         public void Show()
         {
-            ICard card = (ICard)_Cards[0]!;
+            ICard card = _Cards[0];
             card.Face();
         }
 
-        public ICard[] Empty()
+        public List<ICard> RetrieveAllCards()
         {
-            ICard[] cards = (ICard[])_Cards.ToArray(typeof(ICard));
+            List<ICard> cards = _Cards;
             _Cards.Clear();
             return cards;
         }

@@ -21,27 +21,42 @@ namespace Cards
             {"10", 8}, {"9", 7}, {"7", 6}, {"8", 5}, {"6", 4},
             {"5", 3}, {"4", 2}, {"3", 1}, {"2", 0}
         };
+        private static IPlayer defaultPlayer = new Player("No Name");
 
-        public static void Start(IDeck deck, IPlayer[] cardPlayers)
+        public static void Start(IDeck deck, List<IPlayer> cardPlayers)
         {
             // begin game
             deck.Shuffle(shuffleCount: 10);
-
             Console.WriteLine("Game Started!");
-            Console.Write($"Current card: ");
 
-            IPlayer[] orderedPlayers = OrderPlayers(players: cardPlayers, deck: deck, selection: SelectPlayer.HighestCard);
-            Console.WriteLine($"{orderedPlayers[0]} goes first.");
+            // TODO: insert while loop here to play multiple rounds up to `i`
+            //      Console.WriteLine("Round {i} Started!");
+
+            List<IPlayer> orderedPlayers = OrderPlayers(players: cardPlayers, deck: deck, selection: SelectPlayer.HighestCard);
+            Console.WriteLine($"{orderedPlayers[0].Name} goes first.");
 
             bool cardsDealt = DealCardsToPlayers(players: orderedPlayers, deck: deck);
+            IPlayer winner = new Player("No winner");
 
             if (cardsDealt)
             {
-                GameRound(players: orderedPlayers);
+                winner = GameRound(players: orderedPlayers);
+                if (winner.Equals(defaultPlayer))
+                    Console.WriteLine("Game Round Ends Without Winner");
+                else
+                {
+                    EndGame(winner);
+                    // Edit players game stats
+                    // Edit winner's game stats
+                    foreach (IPlayer player in cardPlayers)
+                    {
+                        player.DropHand();
+                    }
+                }
             }
         }
 
-        public static IPlayer[] OrderPlayers(IPlayer[] players, IDeck deck, SelectPlayer selection = SelectPlayer.Random)
+        public static List<IPlayer> OrderPlayers(List<IPlayer> players, IDeck deck, SelectPlayer selection = SelectPlayer.Random)
         {
             // make selection
             IPlayer firstPlayer = players[0];
@@ -52,13 +67,13 @@ namespace Cards
 
             else if (selection == SelectPlayer.Random)
             {
-                int pick = rnd.Next(players.Length);
+                int pick = rnd.Next(players.Count);
                 firstPlayer = players[pick];
             }
 
             if (firstPlayer != players[0])
             {   // move selected player to index 0
-                ArrayList otherPlayers = new();
+                List<IPlayer> otherPlayers = new();
 
                 foreach (IPlayer player in players)
                 {
@@ -66,14 +81,13 @@ namespace Cards
                         otherPlayers.Add(player);
                 }
 
-                IPlayer[] others = (IPlayer[])otherPlayers.ToArray(typeof(IPlayer));
-                IPlayer[] allPlayers = [firstPlayer, .. others];
+                List<IPlayer> allPlayers = [firstPlayer, .. otherPlayers];
                 return allPlayers;
             }
             return players;
         }
 
-        private static IPlayer SelectPlayerByHighestCard(IPlayer[] players, IDeck deck)
+        private static IPlayer SelectPlayerByHighestCard(List<IPlayer> players, IDeck deck)
         {
             int highest = 0;
             IPlayer highestPlayer = players[0];
@@ -116,13 +130,13 @@ namespace Cards
             return highestPlayer;
         }
 
-        public static bool DealCardsToPlayers(IPlayer[] players, IDeck deck, bool dealFromCardZero = true)
+        public static bool DealCardsToPlayers(List<IPlayer> players, IDeck deck, bool dealFromCardZero = true)
         {
             // deal cards to players one card at a time
             // if dealFromCardZero param is false, dealing begins from last card in deck
 
-            int playerCount = players.Length;
-            int cardsPerPlayer = deck.Cards.Length / playerCount;
+            int playerCount = players.Count;
+            int cardsPerPlayer = deck.Cards.Count / playerCount;
 
             try
             {
@@ -131,7 +145,7 @@ namespace Cards
                     foreach (IPlayer player in players)
                     {
                         ICard card = dealFromCardZero ? deck.DealFirst() : deck.DealLast();
-                        player.GetCard(card);
+                        player.AcceptCard(card);
                     }
                 }
                 return true;
@@ -147,10 +161,9 @@ namespace Cards
             return false;
         }
 
-        // MIGHT GHAVE TO RETURN A VALUE
-        private static void GameRound(IPlayer[] players)
+        private static IPlayer GameRound(List<IPlayer> players)
         {
-            // players play their cards
+            // players play their cards 
             Dictionary<IPlayer, ICard> pile = new ();
 
             foreach(IPlayer player in players)
@@ -161,32 +174,35 @@ namespace Cards
                 else
                     pile.Add(player, cardPlayed);
             }
-            // OR RETURN THIS FUNCTION AT THIS POINT AFTER CHECKING THAT ONLY A SINGLE CARD WAS ADDED TO PILE
-            // DECLARE THE CARD PLAYER THE WINNER OF THE ROUND
+            
+            if (pile.Keys.Count == 1)
+            {
+                Console.WriteLine("One player played");
+                pile.Keys.First().AcceptCard(pile.Values.First());
+                return pile.Keys.First();
+            }
 
             // compare cards
-            IPlayer[] highestCardPlayers = GetHighestCardPlayer(players, pile);
-
+            List<IPlayer> highestCardPlayers = GetHighestCardPlayer(pile);
             IPlayer highestPlayer;
+ 
             // check for tie
-            if (highestCardPlayers.Length > 0) 
+            if (highestCardPlayers.Count > 1) 
             {
-                int numPlayersInGame = players.Length;
-                highestPlayer = Battle(highestCardPlayers, numPlayersInGame); // settle tie
+                highestPlayer = Battle(highestCardPlayers); // settle tie
             } 
 
             // award bounty to winner of round
             highestPlayer = highestCardPlayers[0];
-            foreach (KeyValuePair<IPlayer, ICard> playedCard in pile)
-            {
-                highestPlayer.GetCard(playedCard.Value);
-            }
+            highestPlayer.AcceptCards([.. pile.Values]);
+            return highestPlayer;
         }
 
-        private static IPlayer[] GetHighestCardPlayer(IPlayer[] players, Dictionary<IPlayer, ICard> pile)
-        {
-            // compare cards
-            ArrayList highestCardPlayers = [.. players];
+        // Returns a list containing the player(s) who played the highest ranked card(s)
+        private static List<IPlayer> GetHighestCardPlayer(Dictionary<IPlayer, ICard> pile)
+        {           
+            List<IPlayer> highestCardPlayers = [..pile.Keys];
+
             int highest = 0;
             foreach (KeyValuePair<IPlayer, ICard> playedCard in pile)
             {
@@ -201,88 +217,99 @@ namespace Cards
                     highestCardPlayers.Add(playedCard.Key);
                 }
             }
-            IPlayer[] playersWithHighestCards = (IPlayer[])highestCardPlayers.ToArray(typeof(IPlayer));
-            return playersWithHighestCards;
+            return highestCardPlayers;
         }
 
-        //If you're playing with three or four players:
-        //If two or more players are tie for the highest card,
-        //then each player to place by one card as face-down.
-        //Then everybody plays the next card face-up as they would during a non-War round.
-        //The player with the highest card will win.
-        //If there is another tie between these two or more players,
-        //the War needs to continue.
-        private static IPlayer Battle(IPlayer[] tiedPlayers, int numAllPlayers)
+        // With 2 players, each player plays 3 cards face-down
+        //   then a card face-up to determine the winner of the War.
+        // With 3 or 4 players,
+        //   If two or more players tie for the highest card,
+        //   then each player is to place a card face-down.
+        //   Then everybody plays the next card face-up as they would during a non-War round.
+        // The player with the highest card wins and claims all placed cards.
+        // If there is another tie between these two or more players, the War continues.
+        private static IPlayer Battle(List<IPlayer> tiedPlayers)
         {
-            ArrayList highestPlayers = [..tiedPlayers];
-            ArrayList bounty = new();
-            while (highestPlayers.Count > 1) // INSTEAD OF RECURSIVE FUNCTION
-            {
-                if (numAllPlayers == 2)
-                {
-                    foreach(IPlayer player in tiedPlayers)
-                    {
-                        ICard? cardFaceDown = player.PlayCardByPosition(position: CardPosition.last);
-                        // handle edge case where a player in the tie played his last card
-                        // cardFaceDown here would be null
-                        // boot player out of battle
+            int numPlayers = tiedPlayers.Count;
+            List<IPlayer> highestPlayers = [..tiedPlayers];
+            List<ICard> bounty = new();
+            Dictionary<IPlayer, ICard> cardFaceUpPile = new();
+            IPlayer battleChampion = defaultPlayer;
 
-                        // might not be necessary due to GetHighestCardPlayer
-                        if (cardFaceDown == null)
-                        { 
-                            highestPlayers.Remove(player);
-                            break; 
-                        }          
-                        bounty.Add(cardFaceDown);
-                    }
-                }
-                else if (numAllPlayers > 2)
+            // if hand count of any player is 1 at this point they get to skip to cardFaceUp 
+            List<IPlayer> playersWithZeroCards = tiedPlayers.Where(player => player.GetHandCount().Equals(0)).ToList();
+            List<IPlayer> playersWithOnlyOneCard = tiedPlayers.Where(player => player.GetHandCount().Equals(1)).ToList();
+            List<IPlayer> playersWith2CardsOrMore = tiedPlayers.Where(player => player.GetHandCount() > 1).ToList();
+            List<IPlayer> playersWith4CardsOrMore = tiedPlayers.Where(player => player.GetHandCount() >= 4).ToList();
+                
+            // cards face down
+            if (numPlayers > 2)
+            {
+                foreach(IPlayer player in playersWith2CardsOrMore)
                 {
-                    // cards face down
-                    for (int i = 0; i < 4; i++) // each player puts 4 cards face down
+                    ICard? cardFaceDown = player.PlayCardByPosition(position: CardPosition.last);         
+                    bounty.Add(cardFaceDown!);
+                }
+            }
+            else if (numPlayers == 2)
+            {
+                if (playersWith4CardsOrMore.Count == numPlayers)
+                {
+                    for (int i = 0; i < 3; i++) // each player plays 3 cards
                     {
                         foreach (IPlayer player in tiedPlayers)
                         {
                             ICard? cardFaceDown = player.PlayCardByPosition(position: CardPosition.last);
-                            // handle edge case where a player does not have enough cards for the battle
-                            // cardFaceDown here would be null
-                            // boot player out of battle
-
-                            // might not be necessary due to GetHighestCardPlayer
-                            if (cardFaceDown == null)
-                            {
-                                highestPlayers.Remove(player);
-                                continue;
-                            }
-                            bounty.Add(cardFaceDown);
+                            bounty.Add(cardFaceDown!);
                         }
                     }
-                    // cards face up
-                    Dictionary<IPlayer, ICard> cardFaceUpPile = new();
-                    foreach (IPlayer player in tiedPlayers)
-                    {
-                        ICard? cardFaceUp = player.PlayCardByPosition(position: CardPosition.last);
-                        if (cardFaceUp == null)
-                        {
-                            highestPlayers.Remove(player);
-                            continue;
-                        }
-                        else
-                            cardFaceUpPile.Add(player, cardFaceUp);
+                }
+                // both players have either 2 or 3 cards at this point,
+                // they get to place handcount - 1 cards in bounty and the last in face up,
+                else if (playersWithOnlyOneCard.Count == 0)  
+                {
+                    double cardPlays = Math.Min(
+                        tiedPlayers[0].GetHandCount(), 
+                        tiedPlayers[1].GetHandCount()
+                    );
 
-                        if (highestPlayers.Count == 1)
-                            return (IPlayer)highestPlayers[0]!;
-                        else
+                    for (int i = 0; i < (cardPlays - 1); i++) 
+                    {
+                        foreach (IPlayer player in tiedPlayers)
                         {
-                            IPlayer[] playersA = (IPlayer[])highestPlayers.ToArray(typeof(IPlayer));
-                            IPlayer[] pp = GetHighestCardPlayer(players: playersA, pile: cardFaceUpPile);
-                            highestPlayers = [.. pp];
+                            ICard? cardFaceDown = player.PlayCardByPosition(position: CardPosition.last);
+                            bounty.Add(cardFaceDown!);
                         }
                     }
                 }
             }
-            IPlayer hh = (IPlayer)highestPlayers[0]!;
-            return hh;
+
+            // cards face up
+            List<IPlayer> cardFaceUpPlayers = playersWith2CardsOrMore.Union(playersWithOnlyOneCard).ToList();
+
+            // return No Name player as winner.
+            // To handle edge case where consecutive rounds of battles end in draws
+            if (cardFaceUpPlayers.Count == 0)
+            { 
+                return battleChampion; 
+            }
+
+            foreach (IPlayer player in cardFaceUpPlayers)
+            {
+                ICard? cardFaceUp = player.PlayCardByPosition(position: CardPosition.last);
+                cardFaceUpPile.Add(player, cardFaceUp!);
+            }
+
+            highestPlayers = GetHighestCardPlayer(pile: cardFaceUpPile);
+            if (highestPlayers.Count > 1)
+            {
+                battleChampion = Battle(highestPlayers);
+            }            
+
+            // award bounty and card pile to winner
+            battleChampion.AcceptCards(cards: bounty, place: CardPosition.first); 
+            battleChampion.AcceptCards(cards: [..cardFaceUpPile.Values], place: CardPosition.first); 
+            return battleChampion;
         }
 
         private static void EndGame(IPlayer winner)
@@ -291,12 +318,12 @@ namespace Cards
             Console.WriteLine($"{winner.Name} wins");
         }
 
-        ////Game should be in charge of returning stack to deck
+        // Game should be in charge of returning stack to deck
         public bool ReturnStackToDeck(IDeck deck, IStack stack)
         {
             try
             {
-                ICard[] cards = stack.Empty();
+                List<ICard> cards = stack.RetrieveAllCards();
                 deck.ReturnCards(ref cards);
                 return true;
             }

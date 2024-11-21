@@ -6,8 +6,11 @@ namespace Cards.Interfaces
     {
         string Name { get; }
 
-        void GetCard(ICard card);
-        void GetCards(ICard[] cards, CardPosition place = CardPosition.first);
+        void AcceptCard(ICard card);
+
+        void AcceptCards(List<ICard> cards, CardPosition place = CardPosition.first);
+
+        int GetHandCount();
 
         void DropHand();
 
